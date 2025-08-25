@@ -199,7 +199,7 @@ jobs:
       - compare_release
     strategy:
       matrix:
-        include: ${{ fromJson(needs.compare_release.outputs.matrix) }}
+        include: ${{ fromJson(needs.compare_release.outputs.matrix || '{}') }}
     steps:
       - name: Show build info
         if: ${{ needs.compare_release.outputs.matrix != '' }}
