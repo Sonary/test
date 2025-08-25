@@ -149,7 +149,7 @@ jobs:
 
           printf '%s\n' "UPDATE_RELEASE=$UPDATE_RELEASE" >> "$GITHUB_ENV"
       - name: Get build matrix
-        if: ${{ steps.compare_release.outcome == 'success' || env.CONTINUE == 'true' }}
+        if: ${{ steps.compare_release.outcome == 'success' && env.CONTINUE == 'true' }}
         id: get_matrix
         env:
           INPUT_BUILD: ${{ inputs.build }}
