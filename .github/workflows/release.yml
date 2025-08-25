@@ -101,7 +101,7 @@ jobs:
                         "local_name=$4" \
                         "local_tag=$5" >> "$GITHUB_OUTPUT"
 
-          UPSTREAM_BUILD=${UPSTREAM_REPO}/${UPSTREAM_REF}${UPSTREAM_BUILD}
+          UPSTREAM_BUILD=${UPSTREAM_REPO}/raw/${UPSTREAM_REF}${UPSTREAM_BUILD}
           printf '%s\n' "UPSTREAM_BUILD=$UPSTREAM_BUILD" >> "$GITHUB_ENV"
       - name: Get build matrix
         id: get_matrix
