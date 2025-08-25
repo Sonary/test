@@ -27,13 +27,13 @@ concurrency:
 
 env:
   UPSTREAM_REPO: SagerNet/sing-box
+  UPSTREAM_REF: dev-next
+  UPSTREAM_BUILD: /.github/workflows/build.yml
 
 jobs:
   compare_release:
     name: Compare release
     runs-on: ubuntu-latest
-    env:
-      UPSTREAM_REF: ${{ env.UPSTREAM_REPO }}/dev-next
     outputs:
       upstream_name: ${{ steps.compare_release.outputs.upstream_name }}
       upstream_tag: ${{ steps.compare_release.outputs.upstream_tag }}
@@ -100,10 +100,12 @@ jobs:
                         "upstream_tag=$2" \
                         "local_name=$4" \
                         "local_tag=$5" >> "$GITHUB_OUTPUT"
+
+          UPSTREAM_BUILD=${UPSTREAM_REPO}/${UPSTREAM_REF}${UPSTREAM_BUILD}
+          printf '%s\n' "UPSTREAM_BUILD=$UPSTREAM_BUILD" >> "$GITHUB_ENV"
       - name: Get build matrix
         id: get_matrix
         env:
-          UPSTREAM_BUILD: ${{ env.UPSTREAM_REF }}/.github/workflows/build.yml
           INPUT_BUILD: ${{ inputs.build }}
         run: |
           if ! matrix=$(
