@@ -120,12 +120,11 @@ jobs:
 
           EOF
 
-          if [ "$4" = "None" ]
+          if [ "$1" = "None" ]
           then
               printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-$1}"
               exit 1
-          elif [ "$1" != "None" ]
-          then
+          else
               vercomp "$1" "$2"
               if [ -z "$INPUT_VERSION" ] && [ $? -ne 1 ]
               then
