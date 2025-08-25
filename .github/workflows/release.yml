@@ -126,7 +126,7 @@ jobs:
               exit 1
           elif [ "$4" != "None" ]
           then
-              vercomp "$1" "$2"
+              vercomp "$1" "$4"
               if [ -z "$INPUT_VERSION" ] && [ $? -ne 1 ]
               then
                   printf '%s\n' "✅ Already up to date"
