@@ -41,8 +41,6 @@ jobs:
       local_tag: ${{ steps.compare_release.outputs.local_tag }}
       matrix: ${{ steps.get_matrix.outputs.matrix }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
       - name: Compare release
         id: compare_release
         env:
