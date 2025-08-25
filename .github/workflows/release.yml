@@ -130,6 +130,7 @@ jobs:
               if [ -z "$INPUT_VERSION" ] && [ $? -ne 1 ]
               then
                   printf '%s\n' "✅ Already up to date"
+                  printf '%s\n' "continue=false" >> "$GITHUB_OUTPUT"
                   exit 0
               elif [ -n "$INPUT_VERSION" ] && [ $? -eq 0 ]
               then
@@ -142,18 +143,20 @@ jobs:
           printf '%s\n' "upstream_name=$1" \
                         "upstream_tag=$2" \
                         "local_name=$4" \
-                        "local_tag=$5" >> "$GITHUB_OUTPUT"
+                        "local_tag=$5" \
+                        "continue=true" >> "$GITHUB_OUTPUT"
 
-          UPSTREAM_BUILD=${UPSTREAM_REPO}/raw/${UPSTREAM_REF}${UPSTREAM_BUILD}
-          printf '%s\n' "UPSTREAM_BUILD=$UPSTREAM_BUILD" \
-                        "UPDATE_RELEASE=$UPDATE_RELEASE" >> "$GITHUB_ENV"
+          printf '%s\n' "UPDATE_RELEASE=$UPDATE_RELEASE" >> "$GITHUB_ENV"
       - name: Get build matrix
+        if: steps.compare_release.outputs.continue == 'true'
         id: get_matrix
         env:
           INPUT_BUILD: ${{ inputs.build }}
         run: |
+          UPSTREAM_BUILD=${UPSTREAM_REPO}/raw/${UPSTREAM_REF}${UPSTREAM_BUILD}
+
           if ! matrix=$(
-              curl -fsSL "https://github.com/${{ env.UPSTREAM_BUILD }}" | \
+              curl -fsSL "https://github.com/$UPSTREAM_BUILD" | \
               yq -rM '.jobs.build.strategy.matrix.include | @json' | \
               jq -e -crM --arg os "${INPUT_BUILD:-all}" '
                   if $os == "all" then . else map(select(.os == $os)) end |
