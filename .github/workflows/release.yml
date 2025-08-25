@@ -52,27 +52,8 @@ jobs:
           get_release()
           {
               local repo=$1
-              local tag=${2:+tags/}${2:-latest}
-              curl "https://api.github.com/repos/${repo}/releases/${tag}" \
-                   -H "Accept: application/vnd.github+json" \
-                   -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                   -H "X-GitHub-Api-Version: 2022-11-28" | \
-              jq -crM '
-                  map(select(.draft == false and .prerelease == false)) |
-                  .[0] |
-                  .name // "None",
-                  .tag_name // "None",
-                  .published_at // "None"
-              ' 2>/dev/null || \
-              printf '%s\n' "None" "None" "None"
-          }
-          get_release_test()
-          {
-              local repo=$1
-              local tag=${2:+tags/}${2:-latest}
-              echo "https://api.github.com/repos/${repo}/releases/${tag}"
-              curl "https://api.github.com/repos/${repo}/releases/${tag}"
-              curl "https://api.github.com/repos/${repo}/releases/${tag}" \
+              local tags=${2:+tags/}${2:-latest}
+              curl -s "https://api.github.com/repos/${repo}/releases/${tags}" \
                    -H "Accept: application/vnd.github+json" \
                    -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                    -H "X-GitHub-Api-Version: 2022-11-28" | \
@@ -87,8 +68,6 @@ jobs:
           }
 
           UPDATE_RELEASE=false
-          get_release_test "$UPSTREAM_REPO" "$INPUT_VERSION"
-          get_release_test "${{ github.repository }}" "$INPUT_VERSION"
           IFS="
           "
           set -- $(
