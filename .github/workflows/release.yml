@@ -124,7 +124,8 @@ jobs:
           then
               printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-$1}"
               exit 1
-          else
+          elif [ "$4" != "None" ]
+          then
               vercomp "$1" "$2"
               if [ -z "$INPUT_VERSION" ] && [ $? -ne 1 ]
               then
