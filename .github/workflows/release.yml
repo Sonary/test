@@ -47,6 +47,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_VERSION: ${{ inputs.version }}
+          CONTINUE: true
         continue-on-error: true
         run: |
           get_release()
@@ -131,6 +132,7 @@ jobs:
               if [ -z "$INPUT_VERSION" ] && [ $? -ne 1 ]
               then
                   printf '%s\n' "✅ Already up to date"
+                  printf '%s\n' "CONTINUE=false" >> "$GITHUB_ENV"
                   exit 0
               elif [ -n "$INPUT_VERSION" ] && [ $? -eq 0 ]
               then
@@ -147,13 +149,11 @@ jobs:
 
           printf '%s\n' "UPDATE_RELEASE=$UPDATE_RELEASE" >> "$GITHUB_ENV"
       - name: Get build matrix
+        if: ${{ steps.compare_release.outcome == 'success' || CONTINUE == 'true' }}
         id: get_matrix
         env:
           INPUT_BUILD: ${{ inputs.build }}
         run: |
-          echo step=${{ steps }}
-          echo conclusion=${{ steps.compare_release.conclusion }}
-          echo outcome=${{ steps.compare_release.outcome }}
           UPSTREAM_BUILD=${UPSTREAM_REPO}/raw/${UPSTREAM_REF}${UPSTREAM_BUILD}
 
           if ! matrix=$(
@@ -202,5 +202,6 @@ jobs:
         include: ${{ fromJson(needs.compare_release.outputs.matrix) }}
     steps:
       - name: Show build info
+        if: ${{ needs.compare_release.outputs.matrix != '' }}
         run: |
           printf '%s\n' "🏗️ Building ${{ needs.compare_release.outputs.upstream_tag }} for ${{ matrix.os }}/${{ matrix.arch }}, ${UPDATE_RELEASE}"
