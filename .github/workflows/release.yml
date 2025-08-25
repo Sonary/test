@@ -109,7 +109,7 @@ jobs:
           INPUT_BUILD: ${{ inputs.build }}
         run: |
           if ! matrix=$(
-              curl -fsSL "https://github.com/$UPSTREAM_BUILD" |\
+              curl -fsSL "https://github.com/${{ env.UPSTREAM_BUILD }}" | \
               yq -rM '.jobs.build.strategy.matrix.include | @json' | \
               jq -e -crM --arg os "${INPUT_BUILD:-all}" '
                   if $os == "all" then . else map(select(.os == $os)) end |
