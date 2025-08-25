@@ -53,6 +53,8 @@ jobs:
           {
               local repo=$1
               local tag=${2:+tags/}${2:-latest}
+              echo "https://api.github.com/repos/${repo}/releases/${tag}"
+              curl "https://api.github.com/repos/${repo}/releases/${tag}"
               curl "https://api.github.com/repos/${repo}/releases/${tag}" \
                    -H "Accept: application/vnd.github+json" \
                    -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
