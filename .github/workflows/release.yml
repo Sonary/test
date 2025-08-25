@@ -29,6 +29,10 @@ jobs:
   compare_release:
     name: Compare release
     runs-on: ubuntu-latest
+    env:
+      UPSTREAM_REPO: SagerNet/sing-box
+      UPSTREAM_REF: ${{ env.UPSTREAM_REPO }}/dev-next
+      UPSTREAM_BUILD: ${{ env.UPSTREAM_REF }}/.github/workflows/build.yml
     outputs:
       upstream_name: ${{ steps.compare_release.outputs.upstream_name }}
       upstream_tag: ${{ steps.compare_release.outputs.upstream_tag }}
@@ -43,7 +47,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_VERSION: ${{ inputs.version }}
-          UPSTREAM_REPO: SagerNet/sing-box
         run: |
           IFS="
           "
@@ -102,8 +105,7 @@ jobs:
           INPUT_BUILD: ${{ inputs.build }}
         run: |
           if ! matrix=$(
-              curl -fsSL "https://raw.githubusercontent.com/SagerNet/sing-box"\
-          "/dev-next/.github/workflows/build.yml" | \
+              curl -fsSL "https://github.com/$UPSTREAM_BUILD" |\
               yq -rM '.jobs.build.strategy.matrix.include | @json' | \
               jq -e -crM --arg os "${INPUT_BUILD:-all}" '
                   if $os == "all" then . else map(select(.os == $os)) end |
