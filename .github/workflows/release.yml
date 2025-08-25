@@ -25,14 +25,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ inputs.build }}
   cancel-in-progress: true
 
+env:
+  UPSTREAM_REPO: SagerNet/sing-box
+
 jobs:
   compare_release:
     name: Compare release
     runs-on: ubuntu-latest
     env:
-      UPSTREAM_REPO: SagerNet/sing-box
       UPSTREAM_REF: ${{ env.UPSTREAM_REPO }}/dev-next
-      UPSTREAM_BUILD: ${{ env.UPSTREAM_REF }}/.github/workflows/build.yml
     outputs:
       upstream_name: ${{ steps.compare_release.outputs.upstream_name }}
       upstream_tag: ${{ steps.compare_release.outputs.upstream_tag }}
@@ -102,6 +103,7 @@ jobs:
       - name: Get build matrix
         id: get_matrix
         env:
+          UPSTREAM_BUILD: ${{ env.UPSTREAM_REF }}/.github/workflows/build.yml
           INPUT_BUILD: ${{ inputs.build }}
         run: |
           if ! matrix=$(
