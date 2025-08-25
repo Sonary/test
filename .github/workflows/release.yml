@@ -132,6 +132,7 @@ jobs:
                   printf '%s\n' "✅ Already up to date"
                   exit 0
               elif [ -n "$INPUT_VERSION" ] && [ $? -eq 0 ]
+              then
                   printf '%s\n' "🚀 Update release: $1"
                   UPDATE_RELEASE=true
               fi
