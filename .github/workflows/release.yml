@@ -55,7 +55,7 @@ env:
              -X DELETE \
              -H "Accept: application/vnd.github+json" \
              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-             -H "X-GitHub-Api-Version: 2022-11-28"
+             -H "X-GitHub-Api-Version: 2022-11-28" >/dev/null 2>&1
 
         sleep ${1:-30}
         printf '%s\n' "🔄 Workflow deletion timeout reached, forcing exit"
@@ -100,12 +100,25 @@ jobs:
 
             vercomp()
             {
+                case "$1" in
+                    ""|.*|*.|*[!0-9.]*)
+                        return 3
+                        ;;
+                esac
+
+                case "$2" in
+                    ""|.*|*.|*[!0-9.]*)
+                        return 3
+                        ;;
+                esac
+
+                [ "$1" = "$2" ] && exit 0
+
                 ver1=$1 ver2=$2 pad=
 
                 IFS=.
                 set -- $ver1 $ver2
-                i=0
-                while [ $i -lt $# ]
+                while [ ${i:-0} -lt $# ]
                 do
                     pad=$pad.0
                     : $(( i+=1 ))
@@ -116,10 +129,10 @@ jobs:
                 do
                     unset IFS
 
-                    if [ ${v:-0} -gt ${1:-0} ]
+                    if [ ${v:-0} -lt ${1:-0} ]
                     then
                         return 1
-                    elif [ ${v:-0} -lt ${1:-0} ]
+                    elif [ ${v:-0} -gt ${1:-0} ]
                     then
                         return 2
                     elif [ $# -eq 0 ]
@@ -156,25 +169,44 @@ jobs:
 
           EOF
 
+          if upstream == none
+          then
+              not found
+          else
+              found upstream
+              compare
+              ret=$?
+              ! [ -z ${INPUT_VERSION+x} ]
+              case "$(( $? + ret ))" in
+                  0)   found && update ;;
+                  1|2) up-to-date
+                  3|4) found && create ;;
+              esac
+          fi
+
           if [ "$1" = "None" ]
           then
               printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-$1}"
               exit 1
-          elif [ "$4" != "None" ]
-          then
-              vercomp "$1" "$4"
-              if [ -z "$INPUT_VERSION" ] && [ $? -ne 1 ]
-              then
-                  printf '%s\n' "✅ Already up to date"
-                  workflow_cancel
-                  exit 0
-              elif [ -n "$INPUT_VERSION" ] && [ $? -eq 0 ]
-              then
-                  printf '%s\n' "🚀 Update release: $1"
-                  UPDATE_RELEASE=true
-              fi
           else
-              printf '%s\n' "🚀 New release available: $1"
+              vercomp "$1" "$4"
+              ret=$?
+              ! [ -z ${INPUT_VERSION+x} ]
+              case "$(( $? + ret ))" in
+                  0)
+                      printf '%s\n' "🚀 Update release: $1"
+                      UPDATE_RELEASE=true
+                      ;;
+                  1|2)
+                      printf '%s\n' "✅ Already up to date"
+                      workflow_cancel
+                      exit 0
+                      ;;
+                  3|4)
+                      printf '%s\n' "🚀 New release available: $1"
+                      UPDATE_RELEASE=false
+                      ;;
+              esac
           fi
 
           printf '%s\n' "upstream_name=$1" \
