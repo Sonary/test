@@ -178,6 +178,7 @@ jobs:
               ret=$?
               ! [ -z ${INPUT_VERSION+x} ]
               echo ret=${ret},prev=$?
+              ! [ -z ${INPUT_VERSION+x} ]
               case "$(( $? + ret ))" in
                   0)
                       printf '%s\n' "🚀 Update release: $1"
