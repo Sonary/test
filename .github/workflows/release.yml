@@ -112,7 +112,7 @@ jobs:
                         ;;
                 esac
 
-                [ "$1" = "$2" ] && exit 0
+                [ "$1" = "$2" ] && return 0
 
                 ver1=$1 ver2=$2 pad=
 
@@ -171,11 +171,9 @@ jobs:
 
           if [ "$1" = "None" ]
           then
-              echo world
               printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-$1}"
               exit 1
           else
-              echo hello
               vercomp "$1" "$4"
               ret=$?
               ! [ -z ${INPUT_VERSION+x} ]
@@ -191,10 +189,6 @@ jobs:
                       ;;
                   3|4)
                       printf '%s\n' "🚀 New release available: $1"
-                      UPDATE_RELEASE=false
-                      ;;
-                  *)
-                      printf '%s\n' "hello world=$ret"
                       UPDATE_RELEASE=false
                       ;;
               esac
