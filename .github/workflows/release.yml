@@ -19,7 +19,7 @@ on:
           - darwin
           - android
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/10 * * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ inputs.build }}
@@ -177,6 +177,7 @@ jobs:
               vercomp "$1" "$4"
               ret=$?
               ! [ -z ${INPUT_VERSION+x} ]
+              echo ret=${ret},prev=$?
               case "$(( $? + ret ))" in
                   0)
                       printf '%s\n' "🚀 Update release: $1"
