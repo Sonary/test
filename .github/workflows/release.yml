@@ -25,6 +25,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ inputs.build }}
   cancel-in-progress: true
 
+permissions:
+  actions: write
+
 env:
   UPSTREAM_REPO: SagerNet/sing-box
   UPSTREAM_REF: dev-next
