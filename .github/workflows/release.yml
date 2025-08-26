@@ -19,7 +19,7 @@ on:
           - darwin
           - android
   schedule:
-    - cron: "0 * * * *"
+    - cron: "*/30 * * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ inputs.build }}
