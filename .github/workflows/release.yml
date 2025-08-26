@@ -100,17 +100,7 @@ jobs:
 
             vercomp()
             {
-                case "$1" in
-                    ""|.*|*.|*[!0-9.]*)
-                        return 3
-                        ;;
-                esac
-
-                case "$2" in
-                    ""|.*|*.|*[!0-9.]*)
-                        return 3
-                        ;;
-                esac
+                [ "$2" = "None" ] && return 3
 
                 [ "$1" = "$2" ] && return 0
 
@@ -169,17 +159,22 @@ jobs:
 
           EOF
 
-          if [ "$1" = "None" ]
+          upstream_name=$1
+          upstream_tag=$2
+          local_name=$4
+          local_tag=$5
+
+          if [ "$upstream_name" = "None" ]
           then
-              printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-$1}"
+              printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-$upstream_name}"
               exit 1
           else
-              vercomp "$1" "$4"
+              vercomp "$upstream_name" "$local_name"
               ret=$?
               [ -n "$INPUT_VERSION" ]
               case "$(( $? + ret ))" in
                   0)
-                      printf '%s\n' "🚀 Update release: $1"
+                      printf '%s\n' "🚀 Update release: $upstream_name"
                       UPDATE_RELEASE=true
                       ;;
                   1|2)
@@ -188,16 +183,16 @@ jobs:
                       exit 0
                       ;;
                   3|4)
-                      printf '%s\n' "🚀 New release available: $1"
+                      printf '%s\n' "🚀 New release available: $upstream_name"
                       UPDATE_RELEASE=false
                       ;;
               esac
           fi
 
-          printf '%s\n' "upstream_name=$1" \
-                        "upstream_tag=$2" \
-                        "local_name=$4" \
-                        "local_tag=$5" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "upstream_name=$upstream_name" \
+                        "upstream_tag=$upstream_tag" \
+                        "local_name=$local_name" \
+                        "local_tag=$local_tag" >> "$GITHUB_OUTPUT"
 
           printf '%s\n' "UPDATE_RELEASE=$UPDATE_RELEASE" >> "$GITHUB_ENV"
       - name: Get build matrix
