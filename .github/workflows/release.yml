@@ -33,8 +33,8 @@ env:
   UPSTREAM_REF: dev-next
   UPSTREAM_BUILD: /.github/workflows/build.yml
   UPDATE_RELEASE: false
-  WORKFLOW_FUNC: |
-    cancel_workflow()
+  FUNC_WORKFLOW: |
+    workflow_cancel()
     {
         curl -s "https://api.github.com/repos/${{ github.repository }}"\
     "/actions/runs/${{ github.run_id }}/cancel" \
@@ -44,59 +44,22 @@ env:
              -H "X-GitHub-Api-Version: 2022-11-28" >/dev/null 2>&1
 
         sleep ${1:-30}
-        printf '%s\n' "🔄 Timeout reached, forcing exit"
+        printf '%s\n' "🔄 Workflow cancellation timeout reached, forcing exit"
         exit 2
     }
 
-    get_release()
+    workflow_delete()
     {
-        repo=$1
-        tags=${2:+tags/}${2:-latest}
-        curl -s "https://api.github.com/repos/${repo}/releases/${tags}" \
+        curl -s "https://api.github.com/repos/${{ github.repository }}"\
+    "/actions/runs/${{ github.run_id }}" \
+             -X DELETE \
              -H "Accept: application/vnd.github+json" \
              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-             -H "X-GitHub-Api-Version: 2022-11-28" | \
-        jq -crM '
-            (
-                select(.draft == false and .prerelease == false) |
-                .name, .tag_name, .published_at
-            ) // (
-                "None", "None", "None"
-            )
-        ' 2>/dev/null || \
-        printf '%s\n' "None" "None" "None"
-    }
+             -H "X-GitHub-Api-Version: 2022-11-28" >/dev/null 2>&1
 
-    vercomp()
-    {
-        ver1=$1 ver2=$2 pad=
-
-        IFS=.
-        set -- $ver1 $ver2
-        i=0
-        while [ $i -lt $# ]
-        do
-            pad=$pad.0
-            : $(( i+=1 ))
-        done
-
-        set -- $ver2
-        for v in $ver1 $pad
-        do
-            unset IFS
-
-            if [ ${v:-0} -gt ${1:-0} ]
-            then
-                return 1
-            elif [ ${v:-0} -lt ${1:-0} ]
-            then
-                return 2
-            elif [ $# -eq 0 ]
-            then
-                return 0
-            fi
-            shift
-        done
+        sleep ${1:-30}
+        printf '%s\n' "🔄 Workflow deletion timeout reached, forcing exit"
+        exit 2
     }
 
 jobs:
@@ -115,9 +78,61 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_VERSION: ${{ inputs.version }}
+          FUNC_COMPARE_RELEASE: |
+            get_release()
+            {
+                repo=$1
+                tags=${2:+tags/}${2:-latest}
+                curl -s "https://api.github.com/repos/${repo}/releases/${tags}" \
+                     -H "Accept: application/vnd.github+json" \
+                     -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                     -H "X-GitHub-Api-Version: 2022-11-28" | \
+                jq -crM '
+                    (
+                        select(.draft == false and .prerelease == false) |
+                        .name, .tag_name, .published_at
+                    ) // (
+                        "None", "None", "None"
+                    )
+                ' 2>/dev/null || \
+                printf '%s\n' "None" "None" "None"
+            }
+
+            vercomp()
+            {
+                ver1=$1 ver2=$2 pad=
+
+                IFS=.
+                set -- $ver1 $ver2
+                i=0
+                while [ $i -lt $# ]
+                do
+                    pad=$pad.0
+                    : $(( i+=1 ))
+                done
+
+                set -- $ver2
+                for v in $ver1 $pad
+                do
+                    unset IFS
+
+                    if [ ${v:-0} -gt ${1:-0} ]
+                    then
+                        return 1
+                    elif [ ${v:-0} -lt ${1:-0} ]
+                    then
+                        return 2
+                    elif [ $# -eq 0 ]
+                    then
+                        return 0
+                    fi
+                    shift
+                done
+            }
         run: |
           . /dev/stdin << EOF
-          $WORKFLOW_FUNC
+          $FUNC_WORKFLOW
+          $FUNC_COMPARE_RELEASE
           EOF
 
           IFS="
@@ -151,7 +166,7 @@ jobs:
               if [ -z "$INPUT_VERSION" ] && [ $? -ne 1 ]
               then
                   printf '%s\n' "✅ Already up to date"
-                  cancel_workflow
+                  workflow_cancel
                   exit 0
               elif [ -n "$INPUT_VERSION" ] && [ $? -eq 0 ]
               then
@@ -211,9 +226,14 @@ jobs:
           EOF
 
           printf '%s\n' "matrix=$matrix" >> "$GITHUB_OUTPUT"
-      - name: Exit job
-        if: ${{ cancelled() }}
-        run: exit 0
+      - name: Cleanup
+        if: ${{ cancelled() && github.event_name == 'schedule' }}
+        run: |
+          . /dev/stdin << EOF
+          $FUNC_WORKFLOW
+          EOF
+
+          workflow_delete
   build:
     name: Build binary
     runs-on: ubuntu-latest
