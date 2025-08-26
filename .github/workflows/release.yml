@@ -171,9 +171,11 @@ jobs:
 
           if [ "$1" = "None" ]
           then
+              echo world
               printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-$1}"
               exit 1
           else
+              echo hello
               vercomp "$1" "$4"
               ret=$?
               ! [ -z ${INPUT_VERSION+x} ]
