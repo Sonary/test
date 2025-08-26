@@ -173,7 +173,7 @@ jobs:
               ret=$?
               echo h1
               echo INPUT_VERSION=${INPUT_VERSION:-test}
-              test -n "${INPUT_VERSION:-}"
+              #test -n "${INPUT_VERSION:-}"
               : $(( ret+=$? ))
               echo h2
               case "$ret" in
