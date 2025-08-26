@@ -191,6 +191,10 @@ jobs:
                       printf '%s\n' "🚀 New release available: $1"
                       UPDATE_RELEASE=false
                       ;;
+                  *)
+                      printf '%s\n' "hello world=$ret"
+                      UPDATE_RELEASE=false
+                      ;;
               esac
           fi
 
