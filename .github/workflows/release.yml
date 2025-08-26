@@ -164,13 +164,18 @@ jobs:
           local_name=$4
           local_tag=$5
 
+          echo h1
+
           if [ "$upstream_name" = "None" ]
           then
+              echo h2
               printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-$upstream_name}"
               exit 1
           else
+              echo h3
               vercomp "$upstream_name" "$local_name"
               ret=$?
+              echo h4
               [ -n "$INPUT_VERSION" ]
               case "$(( $? + ret ))" in
                   0)
@@ -187,6 +192,7 @@ jobs:
                       UPDATE_RELEASE=false
                       ;;
               esac
+              echo h5
           fi
 
           printf '%s\n' "upstream_name=$upstream_name" \
