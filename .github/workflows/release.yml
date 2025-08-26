@@ -172,7 +172,8 @@ jobs:
               vercomp "$upstream_name" "$local_name"
               ret=$?
               echo h1
-              test -n "$INPUT_VERSION"
+              echo INPUT_VERSION=${INPUT_VERSION:-test}
+              test -n "${INPUT_VERSION:-}"
               : $(( ret+=$? ))
               echo h2
               case "$ret" in
