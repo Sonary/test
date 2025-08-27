@@ -201,12 +201,11 @@ jobs:
               exit 1
           fi
 
-          echo h1
           ret=${INPUT_VERSION:+1}
-          echo h2
           vercomp "$upstream_name" "$local_name"
+          echo h1
           ret=${ret:-0}$?
-          echo h3
+          echo h2
 
           case "$ret" in
               10)
