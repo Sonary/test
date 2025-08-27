@@ -131,7 +131,9 @@ jobs:
 
                 [ "$ver1" = "$ver2" ] && return 0
 
+                echo h1
                 [ "$ver2" = "None" ] && return 1
+                echo h2
 
                 IFS=.
                 set -- $ver1 $ver2
@@ -203,9 +205,7 @@ jobs:
 
           ret=${INPUT_VERSION:+1}
           vercomp "$upstream_name" "$local_name"
-          echo h1
           ret=${ret:-0}$?
-          echo h2
 
           case "$ret" in
               10)
