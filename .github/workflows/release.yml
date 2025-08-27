@@ -42,8 +42,6 @@ env:
              -sL "$@"
     }
   FUNC_WORKFLOW: |
-    $FUNC_COMMON
-
     workflow_curl()
     {
         path=$1
@@ -156,6 +154,7 @@ jobs:
             }
         run: |
           . /dev/stdin << EOF
+          $FUNC_COMMON
           $FUNC_WORKFLOW
           $FUNC_COMPARE_RELEASE
           EOF
@@ -269,6 +268,7 @@ jobs:
         if: ${{ cancelled() && github.event_name == 'schedule' }}
         run: |
           . /dev/stdin << EOF
+          $FUNC_COMMON
           $FUNC_WORKFLOW
           EOF
 
