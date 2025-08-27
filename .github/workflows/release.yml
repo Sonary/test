@@ -172,8 +172,8 @@ jobs:
           IFS="
           "
           set -- $(
-              get_release "$UPSTREAM_REPO" "$INPUT_VERSION"
-              get_release "${{ github.repository }}" "$INPUT_VERSION"
+              get_release "$UPSTREAM_REPO" "${INPUT_VERSION:+v${INPUT_VERSION#v}}"
+              get_release "${{ github.repository }}" "${INPUT_VERSION:+v${INPUT_VERSION#v}}"
           )
 
           cat << EOF
