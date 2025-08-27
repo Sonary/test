@@ -57,6 +57,7 @@ env:
 
     workflow_cancel()
     {
+        echo workflow_curl "/${{ github.run_id }}/cancel" -X POST
         workflow_curl "/${{ github.run_id }}/cancel" -X POST >/dev/null 2>&1
 
         sleep ${1:-30}
