@@ -109,7 +109,7 @@ jobs:
             {
                 repo=$1
                 tags=${2:+tags/}${2:-latest}
-                curl -s "https://api.github.com/repos/${repo}/releases/${tags}" \
+                curl -s "https://api.github.com/repos/${repo}/releases/${tags}"\
                      -H "Accept: application/vnd.github+json" \
                      -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                      -H "X-GitHub-Api-Version: 2022-11-28" | \
@@ -131,9 +131,7 @@ jobs:
 
                 [ "$ver1" = "$ver2" ] && return 0
 
-                echo h1
                 [ "$ver2" = "None" ] && return 1
-                echo h2
 
                 IFS=.
                 set -- $ver1 $ver2
@@ -174,8 +172,9 @@ jobs:
           IFS="
           "
           set -- $(
-              get_release "$UPSTREAM_REPO" "${INPUT_VERSION:+v${INPUT_VERSION#v}}"
-              get_release "${{ github.repository }}" "${INPUT_VERSION:+v${INPUT_VERSION#v}}"
+              INPUT_VERSION=${INPUT_VERSION:+v${INPUT_VERSION#v}}
+              get_release "$UPSTREAM_REPO" "$INPUT_VERSION"
+              get_release "${{ github.repository }}" "$INPUT_VERSION"
           )
 
           cat << EOF
@@ -199,13 +198,12 @@ jobs:
 
           if [ "$upstream_name" = "None" ]
           then
-              printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-latest}"
+              printf '%s\n' "❌ Upstream not found: ${INPUT_VERSION:-latest}"
               exit 1
           fi
 
-          ret=${INPUT_VERSION:+1}
-          vercomp "$upstream_name" "$local_name"
-          ret=${ret:-0}$?
+          r=${INPUT_VERSION:+1}
+          vercomp "$upstream_name" "$local_name" && r=${r:-0}0 || r=${r:-0}$?
 
           case "$ret" in
               10)
