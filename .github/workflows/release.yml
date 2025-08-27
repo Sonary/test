@@ -205,7 +205,7 @@ jobs:
           r=${INPUT_VERSION:+1}
           vercomp "$upstream_name" "$local_name" && r=${r:-0}0 || r=${r:-0}$?
 
-          case "$ret" in
+          case "$r" in
               10)
                   printf '%s\n' "🚀 Update release: $upstream_name"
                   UPDATE_RELEASE=true
@@ -220,7 +220,7 @@ jobs:
                   exit 0
                   ;;
               *)
-                  printf '%s\n' "❌ Unexpected case: $ret"
+                  printf '%s\n' "❌ Unexpected case: $r"
                   exit 1
                   ;;
           esac
