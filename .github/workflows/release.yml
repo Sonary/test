@@ -44,7 +44,8 @@ env:
         curl -H "Accept: application/vnd.github+json" \
              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
              -H "X-GitHub-Api-Version: 2022-11-28" \
-             -s $@ 2>&1
+             -s $@
+        echo "hello" 1>&2
     }
   FUNC_WORKFLOW: |
     workflow_curl()
@@ -56,7 +57,7 @@ env:
         )
         echo "$arg" 1>&2
         CURL "https://api.github.com/repos/${{ github.repository }}"\
-    "/actions/runs${args%% *}" ${args#* } 2>&1
+    "/actions/runs${args%% *}" ${args#* }
     }
 
     workflow_list()
@@ -67,7 +68,7 @@ env:
     workflow_cancel()
     {
         #workflow_curl "/${{ github.run_id }}/cancel" -X POST >/dev/null 2>&1
-        workflow_curl "/${{ github.run_id }}/cancel" -X POST 2>&1
+        workflow_curl "/${{ github.run_id }}/cancel" -X POST
 
         sleep ${1:-30}
         printf '%s\n' "🔄 Workflow cancellation timeout reached, forcing exit"
