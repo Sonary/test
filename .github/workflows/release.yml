@@ -58,7 +58,7 @@ env:
         echo "$arg" 1>&2
         CURL ${args#* } \
              "https://api.github.com/repos/${{ github.repository }}"\
-    "/actions/runs${args%% *}" ${args#* }
+    "/actions/runs${args%% *}"
     }
 
     workflow_list()
