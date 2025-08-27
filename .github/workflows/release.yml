@@ -37,7 +37,7 @@ env:
     CURL()
     {
         arg=$(cat << EOF
-        curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -sL "$@"
+        curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -sL $@
     EOF
         )
         echo "$arg" 1>&2
