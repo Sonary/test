@@ -192,7 +192,6 @@ jobs:
                       UPDATE_RELEASE=false
                       ;;
               esac
-              echo h3
           fi
 
           printf '%s\n' "upstream_name=$upstream_name" \
