@@ -57,7 +57,8 @@ env:
 
     workflow_cancel()
     {
-        workflow_curl "/${{ github.run_id }}/cancel" -X POST >/dev/null 2>&1
+        #workflow_curl "/${{ github.run_id }}/cancel" -X POST >/dev/null 2>&1
+        workflow_curl "/${{ github.run_id }}/cancel" -X POST
 
         sleep ${1:-30}
         printf '%s\n' "🔄 Workflow cancellation timeout reached, forcing exit"
