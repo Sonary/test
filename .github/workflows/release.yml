@@ -40,7 +40,7 @@ env:
         shift
 
         curl -s "https://api.github.com/repos/${{ github.repository }}"\
-    "/actions/runs${path}" \
+    "/actions/runs$path" \
              -H "Accept: application/vnd.github+json" \
              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
              -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -65,21 +65,12 @@ env:
     {
         printf '%*s%s' "${2:-3}" "" "- Deleting run ${1} ... "
 
-        curl -s "https://api.github.com/repos/${{ github.repository }}"\
-    "/actions/runs/${1}" \
-             -X DELETE \
-             -H "Accept: application/vnd.github+json" \
-             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-             -H "X-GitHub-Api-Version: 2022-11-28" >/dev/null 2>&1
+        workflow_curl "/$1" -X DELETE >/dev/null 2>&1
 
         i=0
         while [ $i -lt 30 ]
         do
-            if ! curl -fs "https://api.github.com/repos/"\
-    "${{ github.repository }}/actions/runs/${1}" \
-                      -H "Accept: application/vnd.github+json" \
-                      -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                      -H "X-GitHub-Api-Version: 2022-11-28" >/dev/null 2>&1
+            if ! workflow_curl "/$1" -f >/dev/null 2>&1
             then
                 printf '%s\n' "✔"
                 return 0
