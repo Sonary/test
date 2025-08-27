@@ -51,13 +51,12 @@ env:
     {
         args=$@
         arg=$(cat << EOF
-    CURL "https://api.github.com/repos/${{ github.repository }}/actions/runs${args%% *}" "${args#* }"
+    CURL "https://api.github.com/repos/${{ github.repository }}/actions/runs${args%% *}" ${args#* }
     EOF
         )
         echo "$arg" 1>&2
         CURL "https://api.github.com/repos/${{ github.repository }}"\
-    "/actions/runs${args%% *}" \
-             "${args#* }"
+    "/actions/runs${args%% *}" ${args#* }
     }
 
     workflow_list()
