@@ -59,12 +59,33 @@ env:
 
     workflow_delete()
     {
+        printf '%*s%s' "${2:-3}" "" "- Deleting run ${1} ... "
+
         curl -s "https://api.github.com/repos/${{ github.repository }}"\
     "/actions/runs/${1}" \
              -X DELETE \
              -H "Accept: application/vnd.github+json" \
              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-             -H "X-GitHub-Api-Version: 2022-11-28"
+             -H "X-GitHub-Api-Version: 2022-11-28" >/dev/null 2>&1
+
+        i=0
+        while [ $i -lt 30 ]
+        do
+            if ! curl -s "https://api.github.com/repos/"\
+    "${{ github.repository }}/actions/runs/${1}" \
+                      -H "Accept: application/vnd.github+json" \
+                      -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                      -H "X-GitHub-Api-Version: 2022-11-28" >/dev/null 2>&1
+            then
+                printf '%s\n' "✔"
+                return 0
+            fi
+
+            sleep 1
+            : $(( i+=1 ))
+        done
+
+        printf '%s\n' "✖"
     }
 
 jobs:
@@ -250,17 +271,17 @@ jobs:
           $FUNC_WORKFLOW
           EOF
 
+          printf '%s\n' "🗑️ Deleting workflow runs ..."
+
           workflow_list "event=schedule&status=cancelled" | \
           jq -r '
               .workflow_runs[] |
               select(.id != ${{ github.run_id }}) |
               .id
           ' | \
-          while read -r run_id
-          do
-              printf '%s\n' "🗑️ Deleting workflow run ID: $run_id"
-              workflow_delete "$run_id"
-          done
+          xargs -I{} workflow_delete "{}"
+
+          printf '%s\n' "✅ Cleanup complete"
   build:
     name: Build binary
     runs-on: ubuntu-latest
