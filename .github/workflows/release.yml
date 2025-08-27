@@ -34,6 +34,15 @@ env:
   UPSTREAM_BUILD: /.github/workflows/build.yml
   UPDATE_RELEASE: false
   FUNC_WORKFLOW: |
+    workflow_list()
+    {
+        curl -s "https://api.github.com/repos/${{ github.repository }}"\
+    "/actions/runs?${1}" \
+             -H "Accept: application/vnd.github+json" \
+             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+             -H "X-GitHub-Api-Version: 2022-11-28"
+    }
+
     workflow_cancel()
     {
         curl -s "https://api.github.com/repos/${{ github.repository }}"\
@@ -51,15 +60,11 @@ env:
     workflow_delete()
     {
         curl -s "https://api.github.com/repos/${{ github.repository }}"\
-    "/actions/runs/${{ github.run_id }}" \
+    "/actions/runs/${1}" \
              -X DELETE \
              -H "Accept: application/vnd.github+json" \
              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
              -H "X-GitHub-Api-Version: 2022-11-28"
-
-        sleep ${1:-30}
-        printf '%s\n' "🔄 Workflow deletion timeout reached, forcing exit"
-        exit 2
     }
 
 jobs:
@@ -246,7 +251,17 @@ jobs:
           $FUNC_WORKFLOW
           EOF
 
-          workflow_delete
+          workflow_list "event=schedule&status=cancelled" | \
+          jq -r '
+              .workflow_runs[] |
+              select(.id != ${{ github.run_id }}) |
+              .id
+          ' | \
+          while read -r run_id
+          do
+              printf '%s\n' "🗑️ Deleting workflow run ID: $run_id"
+              workflow_delete "$run_id"
+          done
   build:
     name: Build binary
     runs-on: ubuntu-latest
