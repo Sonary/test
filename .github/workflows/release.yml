@@ -126,15 +126,18 @@ jobs:
 
             vercomp()
             {
-                [ "$2" = "None" ] && return 3
+                ver1=$1
+                ver2=$2
 
-                [ "$1" = "$2" ] && return 0
+                [ "$ver1" = "$ver2" ] && return 0
 
-                ver1=$1 ver2=$2 pad=
+                [ "$ver2" = "None" ] && return 1
 
                 IFS=.
                 set -- $ver1 $ver2
-                while [ ${i:-0} -lt $# ]
+                pad=
+                i=0
+                while [ $i -lt $# ]
                 do
                     pad=$pad.0
                     : $(( i+=1 ))
@@ -145,10 +148,12 @@ jobs:
                 do
                     unset IFS
 
-                    if [ ${v:-0} -lt ${1:-0} ]
+                    num1=${v:-0}
+                    num2=${1:-0}
+                    if [ $num1 -lt $num2 ]
                     then
                         return 1
-                    elif [ ${v:-0} -gt ${1:-0} ]
+                    elif [ $num1 -gt $num2 ]
                     then
                         return 2
                     elif [ $# -eq 0 ]
@@ -192,28 +197,33 @@ jobs:
 
           if [ "$upstream_name" = "None" ]
           then
-              printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-$upstream_name}"
+              printf '%s\n' "❌ Upstream release not found: ${INPUT_VERSION:-latest}"
               exit 1
-          else
-              vercomp "$upstream_name" "$local_name"
-              ret=$?
-              [ -z "$INPUT_VERSION" ] && : $(( ret+=1 ))
-              case "$ret" in
-                  0)
-                      printf '%s\n' "🚀 Update release: $upstream_name"
-                      UPDATE_RELEASE=true
-                      ;;
-                  1|2)
-                      printf '%s\n' "✅ Already up to date"
-                      workflow_cancel
-                      exit 0
-                      ;;
-                  3|4)
-                      printf '%s\n' "🚀 New release available: $upstream_name"
-                      UPDATE_RELEASE=false
-                      ;;
-              esac
           fi
+
+          ret=${INPUT_VERSION:+1}
+          vercomp "$upstream_name" "$local_name"
+          ret=${ret:-0}$?
+
+          case "$ret" in
+              10)
+                  printf '%s\n' "🚀 Update release: $upstream_name"
+                  UPDATE_RELEASE=true
+                  ;;
+              11|01)
+                  printf '%s\n' "🚀 New version available: $upstream_name"
+                  UPDATE_RELEASE=false
+                  ;;
+              00|02)
+                  printf '%s\n' "✅ Already up to date"
+                  workflow_cancel
+                  exit 0
+                  ;;
+              *)
+                  printf '%s\n' "❌ Unexpected case: $ret"
+                  exit 1
+                  ;;
+          esac
 
           printf '%s\n' "upstream_name=$upstream_name" \
                         "upstream_tag=$upstream_tag" \
