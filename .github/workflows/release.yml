@@ -45,6 +45,7 @@ env:
     workflow_curl()
     {
         args=$@
+        echo CURL "https://api.github.com/repos/${{ github.repository }}/actions/runs${args%% *}" "${args#* }"
         CURL "https://api.github.com/repos/${{ github.repository }}"\
     "/actions/runs${args%% *}" \
              "${args#* }"
