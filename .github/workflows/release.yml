@@ -279,7 +279,10 @@ jobs:
               select(.id != ${{ github.run_id }}) |
               .id
           ' | \
-          xargs -I{} workflow_delete "{}"
+          while read -r run_id
+          do
+              workflow_delete "$run_id"
+          done
 
           printf '%s\n' "✅ Cleanup complete"
   build:
