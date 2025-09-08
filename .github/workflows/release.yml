@@ -99,7 +99,6 @@ jobs:
       - name: Compare release
         id: compare_release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_VERSION: ${{ inputs.version }}
           FUNC_COMPARE_RELEASE: |
             get_release()
