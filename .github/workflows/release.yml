@@ -50,13 +50,13 @@ env:
         shift
 
         CURL "https://api.github.com/repos/${{ github.repository }}"\
-    "/actions/runs$path" \
+    "/actions$path" \
              "$@"
     }
 
     workflow_cancel()
     {
-        workflow_curl "/${{ github.run_id }}/cancel" -X POST >/dev/null 2>&1
+        workflow_curl "/runs/${{ github.run_id }}/cancel" -X POST >/dev/null 2>&1
 
         sleep ${1:-30}
         printf '%s\n' "🔄 Workflow cancellation timeout reached, forcing exit"
@@ -67,12 +67,12 @@ env:
     {
         printf '%*s%s' "${2:-3}" "" "- Deleting run ${1} ... "
 
-        workflow_curl "/$1" -X DELETE >/dev/null 2>&1
+        workflow_curl "/runs/$1" -X DELETE >/dev/null 2>&1
 
         i=0
         while [ $i -lt 30 ]
         do
-            if ! workflow_curl "/$1" -f >/dev/null 2>&1
+            if ! workflow_curl "/runs/$1" -f >/dev/null 2>&1
             then
                 printf '%s\n' "✔"
                 return 0
@@ -275,7 +275,7 @@ jobs:
 
           printf '%s\n' "🗑️ Deleting workflow runs ..."
 
-          workflow_curl "?event=schedule&status=cancelled" | \
+          workflow_curl "/runs?event=schedule&status=cancelled" | \
           jq -r '
               .workflow_runs[] |
               select(.id != ${{ github.run_id }}) |
