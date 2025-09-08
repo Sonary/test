@@ -1,4 +1,6 @@
-run-name: ${{ inputs.version }}
+name: Build & Release
+
+run-name: ${{ inputs.version == "" && "Check version" || inputs.version }}
 
 on:
   workflow_dispatch:
