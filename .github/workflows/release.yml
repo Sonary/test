@@ -20,8 +20,8 @@ on:
           - windows
           - darwin
           - android
-  schedule:
-    - cron: "0 * * * *"
+  # schedule:
+  #   - cron: "0 * * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ inputs.build }}
